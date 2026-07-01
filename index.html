@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Key Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            margin: 0;
+        }
+        .container {
+            background: #fff;
+            border-radius: 24px;
+            padding: 20px 18px 24px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+            border: 1px solid #e8ecf0;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a2332;
+        }
+        .badge-status {
+            font-size: 11px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            border: 1px solid #a5d6a7;
+        }
+        .input-wrap { margin-bottom: 12px; }
+        .input-wrap input {
+            width: 100%;
+            padding: 14px 16px;
+            background: #f7f9fc;
+            border: 1.5px solid #dfe4ea;
+            border-radius: 14px;
+            color: #1a2332;
+            font-size: 15px;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .input-wrap input:focus {
+            border-color: #0066ff;
+            box-shadow: 0 0 0 4px rgba(0,102,255,0.08);
+            background: #fff;
+        }
+        .input-wrap input::placeholder { color: #9aa6b5; font-weight: 400; }
+
+        .time-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .time-btn {
+            padding: 14px 8px;
+            border: 2px solid #dfe4ea;
+            border-radius: 14px;
+            background: #f7f9fc;
+            color: #4a5a6e;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            text-align: center;
+            touch-action: manipulation;
+            user-select: none;
+        }
+        .time-btn:active { transform: scale(0.95); }
+        .time-btn .sub {
+            font-size: 11px;
+            font-weight: 400;
+            opacity: 0.6;
+            display: block;
+            margin-top: 3px;
+        }
+        .time-btn .selected-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0066ff;
+            display: block;
+            margin-top: 2px;
+        }
+        .time-btn.active {
+            border-color: #0066ff;
+            background: #e8f0fe;
+            color: #0066ff;
+            box-shadow: 0 0 0 3px rgba(0,102,255,0.08);
+        }
+        .time-btn.forever-btn.active {
+            border-color: #9b59b6;
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        .time-btn.forever-btn.active .selected-value { color: #7b1fa2; }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .btn {
+            padding: 12px 0;
+            border: none;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            touch-action: manipulation;
+            user-select: none;
+            min-height: 46px;
+        }
+        .btn:active { transform: scale(0.94); }
+        .btn-create { background: linear-gradient(135deg, #0066ff, #0088ff); color: #fff; box-shadow: 0 4px 16px rgba(0,102,255,0.25); }
+        .btn-check { background: #2ecc71; color: #fff; box-shadow: 0 4px 16px rgba(46,204,113,0.2); }
+        .btn-refresh { background: #f39c12; color: #fff; box-shadow: 0 4px 16px rgba(243,156,18,0.2); }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2px;
+            margin-bottom: 12px;
+        }
+        .stat-item { font-size: 13px; color: #7a8a9e; font-weight: 500; }
+        .stat-item strong { color: #1a2332; font-weight: 700; }
+        .stat-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+        .stat-dot.online { background: #2ecc71; }
+        .stat-dot.offline { background: #ff4757; }
+
+        .key-list-wrap {
+            max-height: 320px;
+            overflow-y: auto;
+            border-radius: 16px;
+            background: #f7f9fc;
+            padding: 4px 2px;
+            border: 1px solid #e8ecf0;
+        }
+        .key-list-wrap::-webkit-scrollbar { width: 4px; }
+        .key-list-wrap::-webkit-scrollbar-thumb { background: #d0d8e0; border-radius: 10px; }
+        .key-list { list-style: none; padding: 0; margin: 0; }
+        .key-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-bottom: 1px solid #e8ecf0;
+            animation: fadeIn 0.25s ease;
+        }
+        .key-item:last-child { border-bottom: none; }
+        .key-info { flex: 1; min-width: 0; }
+        .key-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a2332;
+            font-family: 'SF Mono', monospace;
+            word-break: break-all;
+            display: block;
+        }
+        .key-countdown {
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'SF Mono', 'Courier New', monospace;
+            display: block;
+            margin-top: 3px;
+            letter-spacing: 2px;
+        }
+        .key-countdown.zero { color: #ff4757; }
+        .key-countdown.valid { color: #0066ff; }
+        .key-countdown.forever { color: #7b1fa2; }
+
+        .empty-state { text-align: center; padding: 28px 16px; color: #9aa6b5; font-size: 14px; }
+
+        .admin-area {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #dfe4ea;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .admin-area input {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px 14px;
+            background: #f7f9fc;
+            border: 1.5px solid #dfe4ea;
+            border-radius: 12px;
+            font-size: 13px;
+            outline: none;
+            font-family: inherit;
+        }
+        .admin-area input:focus { border-color: #ff4757; box-shadow: 0 0 0 3px rgba(255,71,87,0.08); }
+        .admin-area .btn-admin {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 12px;
+            background: #ff4757;
+            color: #fff;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            touch-action: manipulation;
+        }
+        .admin-area .btn-admin:active { transform: scale(0.94); }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeInModal 0.25s ease;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 28px;
+            padding: 24px 20px 20px;
+            max-width: 340px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+        .modal-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a2332;
+            margin-bottom: 16px;
+        }
+        .modal-title span { color: #0066ff; }
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .modal-grid .num-btn {
+            padding: 14px 0;
+            border: 1.5px solid #dfe4ea;
+            border-radius: 14px;
+            background: #f7f9fc;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a2332;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            touch-action: manipulation;
+            user-select: none;
+            font-family: inherit;
+        }
+        .modal-grid .num-btn:active { transform: scale(0.92); background: #e8f0fe; border-color: #0066ff; }
+        .modal-grid .num-btn.active-num {
+            background: #0066ff;
+            color: #fff;
+            border-color: #0066ff;
+            box-shadow: 0 4px 12px rgba(0,102,255,0.3);
+        }
+        .modal-close {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            background: #e8ecf0;
+            color: #4a5a6e;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            touch-action: manipulation;
+        }
+        .modal-close:active { transform: scale(0.95); background: #d0d8e0; }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #1a2332;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: all 0.35s ease;
+            z-index: 999;
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.success { background: #2ecc71; }
+        .toast.error { background: #ff4757; }
+        .toast.warning { background: #f39c12; }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 400px) {
+            .btn-grid { grid-template-columns: 1fr 1fr; }
+            .btn-grid .btn-refresh { grid-column: span 2; }
+            .time-selector { gap: 6px; }
+            .time-btn { font-size: 12px; padding: 10px 4px; }
+            .container { padding: 14px 12px 18px; }
+            .header h1 { font-size: 17px; }
+            .modal-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+            .modal-grid .num-btn { padding: 12px 0; font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Key Pro</h1>
+        <span class="badge-status" id="statusBadge">● Online</span>
+    </div>
+
+    <div class="input-wrap">
+        <input type="text" id="keyName" placeholder="Nhập key..." spellcheck="false" autocomplete="off">
+    </div>
+
+    <div class="time-selector" id="timeSelector">
+    </div>
+
+    <div class="btn-grid">
+        <button class="btn btn-create" onclick="createKey()">Tạo</button>
+        <button class="btn btn-check" onclick="checkKey()">Check</button>
+        <button class="btn btn-refresh" onclick="renderKeys()">Tải</button>
+    </div>
+
+    <div class="stats">
+        <span class="stat-item">Tổng: <strong id="keyCount">0</strong></span>
+        <span class="stat-item" id="apiStatus">
+            <span class="stat-dot online" id="statusDot"></span>
+            <span id="statusText">Sẵn sàng</span>
+        </span>
+    </div>
+
+    <div class="key-list-wrap">
+        <ul class="key-list" id="keyList">
+            <li class="empty-state">Chưa có key nào</li>
+        </ul>
+    </div>
+
+    <div class="admin-area">
+        <input type="text" id="adminKeyInput" placeholder="Admin key để xoá..." spellcheck="false">
+        <button class="btn-admin" onclick="adminDeleteKey()">Xoá</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalPicker">
+    <div class="modal-box">
+        <div class="modal-title" id="modalTitle">Chọn <span id="modalTypeLabel">ngày</span></div>
+        <div class="modal-grid" id="modalGrid"></div>
+        <button class="modal-close" onclick="closePicker()">Đóng</button>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const ADMIN_PASSWORD = 'nhat khang';
+    const API_BASE = 'https://dicord-key-bot.onrender.com';
+
+    let selectedType = 'days';
+    let selectedDays = 7;
+    let selectedMonths = 1;
+    let countdownIntervals = {};
+
+    function openPicker(type) {
+        const overlay = document.getElementById('modalPicker');
+        const grid = document.getElementById('modalGrid');
+        const label = document.getElementById('modalTypeLabel');
+        
+        if (type === 'days') {
+            label.textContent = 'ngày';
+            const current = parseInt(document.getElementById('daysValue').textContent) || 7;
+            grid.innerHTML = '';
+            for (let i = 1; i <= 31; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'num-btn' + (i === current ? ' active-num' : '');
+                btn.textContent = i;
+                btn.onclick = function() {
+                    document.querySelectorAll('#modalGrid .num-btn').forEach(b => b.classList.remove('active-num'));
+                    this.classList.add('active-num');
+                    document.getElementById('daysValue').textContent = i;
+                    selectedDays = i;
+                    selectedType = 'days';
+                    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+                    document.getElementById('btnDays').classList.add('active');
+                    closePicker();
+                };
+                grid.appendChild(btn);
+            }
+        } else if (type === 'month') {
+            label.textContent = 'tháng';
+            const current = parseInt(document.getElementById('monthValue').textContent) || 1;
+            grid.innerHTML = '';
+            for (let i = 1; i <= 12; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'num-btn' + (i === current ? ' active-num' : '');
+                btn.textContent = i;
+                btn.onclick = function() {
+                    document.querySelectorAll('#modalGrid .num-btn').forEach(b => b.classList.remove('active-num'));
+                    this.classList.add('active-num');
+                    document.getElementById('monthValue').textContent = i;
+                    selectedMonths = i;
+                    selectedDays = i * 30;
+                    selectedType = 'month';
+                    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+                    document.getElementById('btnMonth').classList.add('active');
+                    closePicker();
+                };
+                grid.appendChild(btn);
+            }
+        }
+        overlay.classList.add('show');
+    }
+
+    function closePicker() {
+        document.getElementById('modalPicker').classList.remove('show');
+    }
+
+    function selectForever() {
+        selectedType = 'forever';
+        selectedDays = 0;
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btnForever').classList.add('active');
+    }
+
+    document.getElementById('modalPicker').addEventListener('click', function(e) {
+        if (e.target === this) closePicker();
+    });
+
+    // Định dạng HH:MM:SS, nếu hết hạn thì 00:00:00
+    function formatCountdown(ms) {
+        if (ms <= 0) return '00:00:00';
+        const totalSec = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSec / 3600);
+        const mins = Math.floor((totalSec % 3600) / 60);
+        const secs = totalSec % 60;
+        return `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    }
+
+    function getCountdownClass(ms) {
+        if (ms <= 0) return 'zero';
+        return 'valid';
+    }
+
+    async function renderKeys() {
+        const list = document.getElementById('keyList');
+        const count = document.getElementById('keyCount');
+        try {
+            const res = await fetch(`${API_BASE}/keys`);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const keys = await res.json();
+            if (!Array.isArray(keys) || keys.length === 0) {
+                list.innerHTML = `<li class="empty-state">Chưa có key nào</li>`;
+                count.textContent = '0';
+                setStatus(true);
+                Object.values(countdownIntervals).forEach(clearInterval);
+                countdownIntervals = {};
+                return;
+            }
+            
+            const now = Date.now();
+            let html = '';
+            const expiryData = [];
+            
+            keys.forEach((item, i) => {
+                let keyName, expiry;
+                if (typeof item === 'object' && item !== null) {
+                    keyName = item.key || item.name || JSON.stringify(item);
+                    expiry = item.expiry || item.expires || item.time;
+                } else {
+                    keyName = String(item);
+                    expiry = null;
+                }
+                
+                let countdownText = '';
+                let remainingMs = 0;
+                let isForever = false;
+                
+                if (expiry === 'forever' || expiry === '∞' || expiry === 0 || expiry === '0') {
+                    isForever = true;
+                    countdownText = '∞';
+                } else if (expiry) {
+                    const expTime = typeof expiry === 'number' ? expiry : new Date(expiry).getTime();
+                    if (!isNaN(expTime)) {
+                        remainingMs = expTime - now;
+                        countdownText = formatCountdown(remainingMs);
+                    } else {
+                        countdownText = expiry;
+                    }
+                } else {
+                    // Không có expiry -> coi như vĩnh viễn
+                    isForever = true;
+                    countdownText = '∞';
+                }
+                
+                const countdownClass = isForever ? 'forever' : getCountdownClass(remainingMs);
+                
+                html += `
+                    <li class="key-item">
+                        <div class="key-info">
+                            <span class="key-text">${keyName}</span>
+                            <span class="key-countdown ${countdownClass}" id="cd_${i}">${countdownText}</span>
+                        </div>
+                    </li>
+                `;
+                
+                if (!isForever && remainingMs > 0) {
+                    expiryData.push({ id: `cd_${i}`, expiry: expTime });
+                } else {
+                    expiryData.push({ id: `cd_${i}`, expiry: isForever ? 'forever' : 0 });
+                }
+            });
+            
+            list.innerHTML = html;
+            count.textContent = keys.length;
+            setStatus(true);
+            
+            Object.values(countdownIntervals).forEach(clearInterval);
+            countdownIntervals = {};
+            startCountdowns(expiryData);
+            
+        } catch (e) {
+            list.innerHTML = `<li class="empty-state">Lỗi: ${e.message}</li>`;
+            count.textContent = '?';
+            setStatus(false);
+        }
+    }
+
+    function startCountdowns(data) {
+        data.forEach((item) => {
+            if (item.expiry === 'forever') return;
+            if (item.expiry <= 0) {
+                // Hiển thị 00:00:00 cố định
+                return;
+            }
+            
+            const elId = item.id;
+            const interval = setInterval(() => {
+                const el = document.getElementById(elId);
+                if (!el) {
+                    clearInterval(interval);
+                    return;
+                }
+                const now = Date.now();
+                const remaining = item.expiry - now;
+                if (remaining <= 0) {
+                    el.textContent = '00:00:00';
+                    el.className = 'key-countdown zero';
+                    clearInterval(interval);
+                    return;
+                }
+                el.textContent = formatCountdown(remaining);
+                el.className = 'key-countdown valid';
+            }, 1000);
+            
+            countdownIntervals[elId] = interval;
+        });
+    }
+
+    async function createKey() {
+        const name = document.getElementById('keyName').value.trim();
+        if (!name) { showToast('Nhập key cần tạo', 'warning'); return; }
+        let expiry = null;
+        if (selectedType === 'forever') {
+            expiry = 'forever';
+        } else {
+            const d = new Date();
+            d.setDate(d.getDate() + selectedDays);
+            expiry = d.toISOString();
+        }
+        try {
+            const payload = { key: name, expiry: expiry };
+            const res = await fetch(`${API_BASE}/create/${encodeURIComponent(name)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                const fallbackRes = await fetch(
+                    `${API_BASE}/create/${encodeURIComponent(name)}?expiry=${encodeURIComponent(expiry)}`
+                );
+                if (!fallbackRes.ok) throw new Error('HTTP ' + fallbackRes.status);
+            }
+            let typeText = '';
+            if (selectedType === 'forever') typeText = 'Vĩnh viễn';
+            else if (selectedType === 'month') typeText = `${selectedMonths} tháng`;
+            else typeText = `${selectedDays} ngày`;
+            showToast(`Đã tạo: ${name} (${typeText})`, 'success');
+            document.getElementById('keyName').value = '';
+            renderKeys();
+        } catch (e) {
+            showToast('Tạo thất bại: ' + e.message, 'error');
+        }
+    }
+
+    async function checkKey() {
+        const name = document.getElementById('keyName').value.trim();
+        if (!name) { showToast('Nhập key cần kiểm tra', 'warning'); return; }
+        try {
+            const res = await fetch(`${API_BASE}/check/${encodeURIComponent(name)}`);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            if (data.success === true || data.valid === true || data.exists === true) {
+                if (data.expiry) {
+                    const expTime = new Date(data.expiry).getTime();
+                    if (!isNaN(expTime)) {
+                        if (expTime < Date.now()) {
+                            showToast(`Key "${name}" đã hết hạn`, 'warning');
+                            return;
+                        }
+                        const remaining = expTime - Date.now();
+                        showToast(`Key "${name}" còn: ${formatCountdown(remaining)}`, 'success');
+                        return;
+                    }
+                }
+                showToast(`Key "${name}" hợp lệ`, 'success');
+            } else {
+                showToast(`Key "${name}" không hợp lệ`, 'error');
+            }
+        } catch (e) {
+            showToast('Lỗi: ' + e.message, 'error');
+        }
+    }
+
+    async function adminDeleteKey() {
+        const name = document.getElementById('keyName').value.trim();
+        const adminKey = document.getElementById('adminKeyInput').value.trim();
+        if (!name) { showToast('Nhập key cần xoá', 'warning'); return; }
+        if (adminKey !== ADMIN_PASSWORD) { showToast('Sai admin key!', 'error'); return; }
+        if (!confirm(`Xoá key "${name}" ?`)) return;
+        try {
+            const res = await fetch(`${API_BASE}/delete/${encodeURIComponent(name)}`, { method: 'DELETE' });
+            if (!res.ok) {
+                const fallback = await fetch(`${API_BASE}/delete/${encodeURIComponent(name)}`);
+                if (!fallback.ok) throw new Error('HTTP ' + fallback.status);
+            }
+            showToast(`Đã xoá: ${name}`, 'success');
+            document.getElementById('keyName').value = '';
+            document.getElementById('adminKeyInput').value = '';
+            renderKeys();
+        } catch (e) {
+            showToast('Xoá thất bại: ' + e.message, 'error');
+        }
+    }
+
+    let toastTimer = null;
+    function showToast(msg, type = '') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast ' + type;
+        void t.offsetWidth;
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    function setStatus(online) {
+        const dot = document.getElementById('statusDot');
+        const txt = document.getElementById('statusText');
+        const badge = document.getElementById('statusBadge');
+        if (online) {
+            dot.className = 'stat-dot online';
+            txt.textContent = 'Online';
+            badge.textContent = '● Online';
+            badge.style.background = '#e8f5e9';
+            badge.style.color = '#2e7d32';
+        } else {
+            dot.className = 'stat-dot offline';
+            txt.textContent = 'Offline';
+            badge.textContent = '● Offline';
+            badge.style.background = '#ffebee';
+            badge.style.color = '#c62828';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderKeys();
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btnDays').classList.add('active');
+        selectedType = 'days';
+        selectedDays = parseInt(document.getElementById('daysValue').textContent);
+        
+        document.getElementById('keyName').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); checkKey(); }
+        });
+        document.getElementById('adminKeyInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); adminDeleteKey(); }
+        });
+    });
+
+    window.renderKeys = renderKeys;
+    window.createKey = createKey;
+    window.checkKey = checkKey;
+    window.adminDeleteKey = adminDeleteKey;
+    window.openPicker = openPicker;
+    window.closePicker = closePicker;
+    window.selectForever = selectForever;
+</script>
+
+</body>
+</html>
